@@ -67,10 +67,9 @@ public class JsonParserTest {
   public void setup(TestContext context) {
     this.vertx = Vertx.vertx();
 
-    JsonObject jsonResponse = new JsonObject();
-    JsonArray ar = new JsonArray();
+    StringBuilder s = new StringBuilder();
     for (int i = 0; i < NUMBER_OF_RECORDS; i++) {
-      ar.add(new JsonObject()
+      JsonObject inst = new JsonObject()
           .put("sequence", i)
           .put("id", UUID.randomUUID().toString())
           .put("title", new JsonObject()
@@ -81,11 +80,11 @@ public class JsonParserTest {
               .add("a1").add("a2").add("a3"))
           .put("k1", true)
           .put("k2", 1234)
-          .putNull("k3")
-      );
+          .putNull("k3");
+      s.append(inst.encode());
+      s.append(" u ");
     }
-    jsonResponse.put("response", ar);
-    buffer = jsonResponse.encodePrettily();
+    buffer = s.toString();
     logger.info("size = {}", buffer.length());
 
     Router router = Router.router(vertx);
@@ -129,6 +128,7 @@ public class JsonParserTest {
   }
 
   public class BatchStreamWrapper implements WriteStream<JsonEvent> {
+    int noEvents = 0;
 
     @Override
     public WriteStream<JsonEvent> exceptionHandler(Handler<Throwable> handler) {
@@ -137,17 +137,19 @@ public class JsonParserTest {
 
     @Override
     public Future<Void> write(JsonEvent jsonEvent) {
-      return null;
+      noEvents++;
+      return Future.succeededFuture();
     }
 
     @Override
     public void write(JsonEvent jsonEvent, Handler<AsyncResult<Void>> handler) {
-
+      noEvents++;
+      handler.handle(Future.succeededFuture());
     }
 
     @Override
     public void end(Handler<AsyncResult<Void>> handler) {
-
+      handler.handle(Future.succeededFuture());
     }
 
     @Override
@@ -179,10 +181,13 @@ public class JsonParserTest {
         .onComplete(context.asyncAssertSuccess(request ->
             request.send()
                 .onComplete(context.asyncAssertSuccess(response -> {
+                  BatchStreamWrapper batchStreamWrapper = new BatchStreamWrapper();
                   JsonParser jp = JsonParser.newParser(response);
                   jp.objectEventMode();
-                  jp.pipeTo(new BatchStreamWrapper());
+                  jp.pipeTo(batchStreamWrapper);
                   jp.endHandler(end -> {
+                    context.assertTrue(batchStreamWrapper.noEvents >= NUMBER_OF_RECORDS*16,
+                        "ev=" + batchStreamWrapper.noEvents);
                     async.complete();
                   });
                   jp.exceptionHandler(e -> {
