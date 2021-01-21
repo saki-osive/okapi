@@ -82,7 +82,7 @@ public class JsonParserTest {
           .put("k2", 1234)
           .putNull("k3");
       s.append(inst.encode());
-      s.append(" u ");
+      s.append(" ");
     }
     buffer = s.toString();
     logger.info("size = {}", buffer.length());
