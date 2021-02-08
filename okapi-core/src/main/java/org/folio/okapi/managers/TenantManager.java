@@ -285,7 +285,7 @@ public class TenantManager implements Liveness {
     }
     return invokePermissions(tenant, options, mdTo, pc)
         .compose(x -> invokeTenantInterface(tenant, options, mdFrom, mdTo, pc))
-        .compose(x -> invokePermissionsPermMod(tenant, options, mdTo, pc))
+        .compose(x -> invokePermissionsPermMod(tenant, options, mdFrom, mdTo, pc))
         .compose(x -> commitModuleChange(tenant, mdFrom, mdTo))
         .compose(x -> Future.succeededFuture((mdTo != null ? mdTo.getId() : ""))
     );
@@ -427,15 +427,18 @@ public class TenantManager implements Liveness {
    * @return fut response
    */
   private Future<Void> invokePermissionsPermMod(Tenant tenant, TenantInstallOptions options,
+                                                ModuleDescriptor mdFrom,
                                                 ModuleDescriptor mdTo, ProxyContext pc) {
     if (mdTo == null || !options.getInvoke()
         || mdTo.getSystemInterface("_tenantPermissions") == null) {
       return Future.succeededFuture();
     }
     // enabling permissions module.
-    return findSystemInterface(tenant, "_tenantPermissions")
-        .compose(res -> loadPermissionsForEnabled(tenant, mdTo, pc))
-        .compose(res -> invokePermissionsForModule(tenant, mdTo, mdTo, pc));
+    Future<Void> future = Future.succeededFuture();
+    if (mdFrom == null) {
+      future = future.compose(x -> loadPermissionsForEnabled(tenant, mdTo, pc));
+    }
+    return future.compose(res -> invokePermissionsForModule(tenant, mdTo, mdTo, pc));
   }
 
   /**
