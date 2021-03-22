@@ -22,6 +22,8 @@ import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
+import io.vertx.ext.web.client.WebClient;
+import io.vertx.ext.web.codec.BodyCodec;
 import org.apache.logging.log4j.Logger;
 import org.junit.After;
 import org.junit.Before;
@@ -169,7 +171,7 @@ public class JsonParserTest {
   }
 
   @Test
-  public void test2(TestContext context) {
+  public void testHttpClient(TestContext context) {
     HttpClient httpClient = vertx.createHttpClient();
     RequestOptions options = new RequestOptions()
         .setHost("localhost")
@@ -199,4 +201,18 @@ public class JsonParserTest {
     async.await();
   }
 
+  @Test
+  public void testWebClient(TestContext context) {
+    AtomicInteger noEvents = new AtomicInteger();
+    JsonParser parser = JsonParser.newParser().objectValueMode();
+    parser.handler(event -> noEvents.getAndAdd(1));
+    WebClient webClient = WebClient.create(vertx);
+    webClient
+        .get(PORT, "localhost", "/test")
+        .as(BodyCodec.jsonStream(parser))
+        .send()
+        .onComplete(context.asyncAssertSuccess(res -> {
+          context.assertEquals(NUMBER_OF_RECORDS, noEvents.get());
+        }));
+  }
 }
