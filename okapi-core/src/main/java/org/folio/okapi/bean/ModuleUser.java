@@ -2,7 +2,6 @@ package org.folio.okapi.bean;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
-import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
  * Tells that module user should be created. This metadata should be read
