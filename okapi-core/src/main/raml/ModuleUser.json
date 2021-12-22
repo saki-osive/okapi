@@ -13,7 +13,7 @@
       "default": "module"
     },
     "permissions": {
-      "description": "Permission ID (usually module.service.method or similar)",
+      "description": "Permission IDs (e.g. module.service.method) that should be assigned for the user",
       "type": "array",
       "items": {
         "type": "string"

@@ -5,9 +5,9 @@ import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
- * Tells how a module is to be deployed. Either by exec'ing a command (and
- * killing the process afterwards), or by using command lines to start and stop
- * it.
+ * Tells that module user should be created. This metadata should be read
+ * by 3rd party automation script, which should create module user
+ * with appropriate permissions
  */
 @JsonInclude(Include.NON_NULL)
 public class ModuleUser {
