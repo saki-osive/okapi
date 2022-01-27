@@ -8,20 +8,23 @@ jobs:
       - uses: actions/checkout@master
       - name: snyk monitor
         uses: snyk/actions/maven-3-jdk-11@master
+        continue-on-error: true
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
         with:
           args: --org=folio-org --all-projects
           command: monitor
-      - name: snyk code
+      - name: snyk code test
         uses: snyk/actions/maven-3-jdk-11@master
+        continue-on-error: true
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
         with:
           args: --org=folio-org
           command: code test
-      - name: snyk container
+      - name: snyk container monitor
         uses: snyk/actions/maven-3-jdk-11@master
+        continue-on-error: true
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
         with:
