@@ -19,11 +19,11 @@ jobs:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
         with:
           args: --org=folio-org
-          command: code
+          command: code test
       - name: snyk container
         uses: snyk/actions/maven-3-jdk-11@master
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
         with:
           args: --org=folio-org
-          command: container
+          command: container monitor
